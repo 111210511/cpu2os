@@ -84,7 +84,7 @@ int run(int *pc, int *bp, int *sp) { // 虛擬機 => pc: 程式計數器, sp: �
 
 int main() // 主程式
 {
-  int *pc, *bp, *sp, poolsz, *t, *fib, *loc;
+  int *pc, *bp, *sp, poolsz, *t, *power2, *loc, *loc1;
 
   poolsz = 256*1024; // arbitrary size
   if (!(e = malloc(poolsz))) { printf("could not malloc(%d) text area\n", poolsz); return -1; } // 程式段
@@ -92,60 +92,44 @@ int main() // 主程式
 
   memset(e, 0, poolsz);
 
-// 3: int f(int n) {
-// 4:   if (n<=0) return 0;
-  fib = e;
+// 2: int power2(int n) {
+// 3:   if (n==0) {;
+  power2 = e;
   *e++ = ENT; *e++ = 0;
   *e++ = LLA; *e++ = 2;
   *e++ = LI;
   *e++ = PSH;
   *e++ = IMM; *e++ = 0;
-  *e++ = LE;
-  *e++ = BZ; loc=e; *e++ = 0; 
-  *e++ = IMM; *e++ = 0;
-  *e++ = LEV;
-// 5:   if (n==1) return 1;
-  *loc = (int) e; *e++ = LLA; *e++ = 2;
-  *e++ = LI;
-  *e++ = PSH;
-  *e++ = IMM; *e++ = 1;
   *e++ = EQ;
   *e++ = BZ; loc=e; *e++ = 0; 
   *e++ = IMM; *e++ = 1;
   *e++ = LEV;
-// 6:   return f(n-1) + f(n-2);
-  *loc = (int) e; *e++ = LLA; *e++ = 2;
+  *loc = (int)e;
+// 7:   return 2*power2(n-1);
+  *e++ = IMM; *e++ = 2;
+  *e++ = PSH;
+  *e++ = LLA; *e++ = 2;
   *e++ = LI;
   *e++ = PSH;
   *e++ = IMM; *e++ = 1;
   *e++ = SUB;
   *e++ = PSH;
-  *e++ = JSR; *e++ = (int) fib;
+  *e++ = JSR; *e++ = (int) power2;
   *e++ = ADJ; *e++ = 1;
-  *e++ = PSH;
-  *e++ = LLA; *e++ = 2;
-  *e++ = LI;
-  *e++ = PSH;
-  *e++ = IMM; *e++ = 2;
-  *e++ = SUB;
-  *e++ = PSH;
-  *e++ = JSR; *e++ = (int) fib;
-  *e++ = ADJ; *e++ = 1;
-  *e++ = ADD;
+  *e++ = MUL;
   *e++ = LEV;
-// 7: }
-//    LEV
+// 9:}
   *e++ = LEV;
-// 8:
-// 9: int main() {
-// 10:   printf("f(7)=%d\n", f(7));
+// 10:
+// 11: int main() {
+// 12:   printf("power2(3)=%d\n", power2(3));
   pc = e;
   *e++ = ENT; *e++ = 0;
-  *e++ = IMM; *e++ = (int) "f(7)=%d\n";
+  *e++ = IMM; *e++ = (int) "power2(3)=%d\n";
   *e++ = PSH;
-  *e++ = IMM; *e++ = 7;
+  *e++ = IMM; *e++ = 3;
   *e++ = PSH;
-  *e++ = JSR; *e++ = (int) fib;
+  *e++ = JSR; *e++ = (int) power2;
   *e++ = ADJ; *e++ = 1;
   *e++ = PSH;
   *e++ = PRTF;
